@@ -13,3 +13,13 @@
 /* Exploración de canales por país */
 .country-toggle{margin-top:6px}.country-chevron{margin-left:auto!important;font-size:17px!important;color:#8e82a8}.country-panel{padding:0 4px 8px 12px;display:flex;flex-direction:column;gap:8px;min-height:0}.country-panel.hidden{display:none}.country-panel input{width:100%;min-width:0;background:#ffffff0b;color:#fff;border:1px solid var(--line);border-radius:9px;padding:10px;font-size:12px;outline:none}.country-panel input:focus{border-color:var(--purple)}.country-list{display:flex;flex-direction:column;gap:3px;max-height:34vh;overflow:auto;padding-right:3px}.country-option{display:flex;justify-content:space-between;align-items:center;gap:8px;text-align:left;background:transparent;color:#bcb5cf;padding:9px 10px;border-radius:8px;font-size:12px}.country-option small{color:#827a98;font-size:10px}.country-option:hover,.country-option.selected{background:#8d60ed20;color:#fff}.country-option.selected{box-shadow:inset 2px 0 var(--purple)}
 @media(max-width:760px){.country-list{max-height:27vh}.country-panel{padding-left:8px}}
+
+/* Fix menú desplegable de países dentro del sidebar */
+.country-menu{display:flex;flex-direction:column;gap:6px;flex-shrink:0}
+.country-toggle{width:100%;flex-shrink:0}
+.country-panel{width:100%;max-height:42vh;overflow:hidden;padding:8px;background:#100c20;border:1px solid var(--line);border-radius:12px;display:flex;flex-direction:column;gap:8px}
+.country-panel.hidden{display:none!important}
+.country-panel input{width:100%;min-width:0;background:#ffffff0b;color:#fff;border:1px solid var(--line);border-radius:9px;padding:10px;font-size:12px;outline:none}
+.country-list{display:flex;flex-direction:column;gap:3px;overflow-y:auto;min-height:0;max-height:calc(42vh - 55px);padding-right:3px}
+.country-option{flex-shrink:0}
+@media(max-width:760px){.country-panel{max-height:38vh}.country-list{max-height:calc(38vh - 55px)}}
