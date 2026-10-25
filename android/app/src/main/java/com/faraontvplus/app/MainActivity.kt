@@ -122,7 +122,8 @@ private suspend fun loadChannels(): List<TvChannel> = withContext(Dispatchers.IO
                 var group = ""
                 var country = ""
                 var id = ""
-                reader.forEachLine { raw ->
+                for (raw in reader.lineSequence()) {
+                    if (all.size >= 1800) break
                     val line = raw.trim()
                     if (line.startsWith("#EXTINF:", true)) {
                         name = line.substringAfter(',').trim().ifBlank { "Canal sin nombre" }
