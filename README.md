@@ -13,3 +13,12 @@ Las señales pueden estar fuera de línea, restringidas por región o no ser com
 Es una web estática: no requiere build ni variables de entorno. En GitHub entra a **Settings → Pages**, selecciona **Deploy from a branch**, la rama `main` y la carpeta `/(root)`.
 
 Utiliza solo señales que tengas derecho a reproducir en tu región. Este proyecto no incluye suscripciones, credenciales ni acceso a canales de pago.
+
+
+## Aplicación Android nativa
+
+El proyecto Android está en la carpeta `android/` y usa Kotlin, Jetpack Compose y Media3/ExoPlayer. Incluye búsqueda, filtros, favoritos guardados en el dispositivo y reproducción de señales compatibles, con una interfaz adaptable a teléfonos y Android TV.
+
+Cada cambio en `android/` ejecuta el workflow **Build Faraon TV Plus APK**. Cuando termine correctamente, abre **Actions → Build Faraon TV Plus APK → ejecución más reciente → Artifacts → Faraon-TV-Plus-APK** para descargar el APK instalable. También puedes ejecutar el workflow manualmente desde Actions.
+
+La aplicación usa las mismas fuentes públicas M3U principales de la web; algunas señales pueden no funcionar en todos los dispositivos o regiones. Este APK inicial es de depuración, no una versión firmada para publicar en Play Store.
