@@ -126,7 +126,7 @@ private suspend fun loadChannels(): List<TvChannel> = withContext(Dispatchers.IO
                 reader.forEachLine { raw ->
                     val line = raw.trim()
                     if (line.startsWith("#EXTINF:", true)) {
-                        name = line.substringAfterLast(',').trim().ifBlank { "Canal sin nombre" }
+                        name = line.substringAfter(',').trim().ifBlank { "Canal sin nombre" }
                         fun attr(key: String) = Regex("$key=\"([^\"]*)\"", RegexOption.IGNORE_CASE)
                             .find(line)?.groupValues?.getOrNull(1).orEmpty()
                         logo = attr("tvg-logo")
