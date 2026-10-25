@@ -36,6 +36,7 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import coil.compose.AsyncImage
 import androidx.media3.common.MediaItem
+import androidx.media3.common.MimeTypes
 import androidx.media3.common.PlaybackException
 import androidx.media3.common.Player
 import androidx.media3.exoplayer.ExoPlayer
@@ -54,9 +55,7 @@ private val Categories = listOf("Todos", "Noticias", "Deportes", "Entretenimient
 private val PlaylistUrls = listOf(
     "https://iptv-org.github.io/iptv/countries/mx.m3u",
     "https://iptv-org.github.io/iptv/languages/spa.m3u",
-    "https://iptv-org.github.io/iptv/categories/sports.m3u",
-    "https://raw.githubusercontent.com/Free-TV/IPTV/master/playlist.m3u8",
-    "https://iptv-org.github.io/iptv/index.m3u"
+    "https://iptv-org.github.io/iptv/categories/sports.m3u"
 )
 
 data class TvChannel(
@@ -133,9 +132,9 @@ private suspend fun loadChannels(): List<TvChannel> = withContext(Dispatchers.IO
                         group = attr("group-title")
                         country = attr("tvg-country")
                         id = attr("tvg-id")
-                    } else if (line.startsWith("http", true) && name.isNotBlank()) {
+                    } else if ((line.startsWith("https://", true) || line.startsWith("http://", true)) && name.isNotBlank()) {
                         val c = TvChannel(name, line, logo, group, country, id)
-                        if (!all.containsKey(c.url)) all[c.url] = c
+                        if (!all.containsKey(c.url) && all.size < 1800) all[c.url] = c
                         name = ""; logo = ""; group = ""; country = ""; id = ""
                     }
                 }
@@ -226,7 +225,11 @@ private fun FaraonApp() {
         background = Ink, surface = Panel, primary = Purple,
         onBackground = Color.White, onSurface = Color.White
     )) {
-        Column(Modifier.fillMaxSize().background(Ink)) {
+        Column(
+            Modifier.fillMaxSize()
+                .then(if (fullScreen) Modifier else Modifier.windowInsetsPadding(WindowInsets.safeDrawing))
+                .background(Ink)
+        ) {
             Row(
                 Modifier.fillMaxWidth().background(Panel).padding(horizontal = 18.dp, vertical = 14.dp),
                 verticalAlignment = Alignment.CenterVertically,
@@ -362,9 +365,23 @@ private fun FaraonApp() {
                                         selected = channel
                                         playerReady = false
                                         playerError = ""
-                                        player.setMediaItem(MediaItem.fromUri(channel.url))
-                                        player.prepare()
-                                        player.playWhenReady = true
+                                        try {
+                                            player.stop()
+                                            val mediaItem = MediaItem.Builder()
+                                                .setUri(channel.url)
+                                                .apply {
+                                                    if (channel.url.contains(".m3u8", ignoreCase = true)) {
+                                                        setMimeType(MimeTypes.APPLICATION_M3U8)
+                                                    }
+                                                }
+                                                .build()
+                                            player.setMediaItem(mediaItem)
+                                            player.prepare()
+                                            player.playWhenReady = true
+                                        } catch (_: Exception) {
+                                            playerError = "No se pudo abrir esta señal. Prueba otro canal."
+                                            playerReady = false
+                                        }
                                     }
                                 )
                             }
