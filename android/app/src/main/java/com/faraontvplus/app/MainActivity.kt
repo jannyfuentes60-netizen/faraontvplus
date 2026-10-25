@@ -10,6 +10,8 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.focusable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
@@ -155,7 +157,9 @@ private fun FaraonApp() {
     var category by remember { mutableStateOf("Todos") }
     var query by remember { mutableStateOf("") }
     var favoritesOnly by remember { mutableStateOf(false) }
-    var favorites by remember { mutableStateOf(setOf<String>()) }
+    val preferences = remember { context.getSharedPreferences("faraon_tv_plus", 0) }
+    var favorites by remember { mutableStateOf(preferences.getStringSet("favorites", emptySet<String>())?.toSet() ?: emptySet()) }
+    var reloadToken by remember { mutableIntStateOf(0) }
     var selected by remember { mutableStateOf<TvChannel?>(null) }
     var playerError by remember { mutableStateOf("") }
     var fullScreen by remember { mutableStateOf(false) }
@@ -180,11 +184,16 @@ private fun FaraonApp() {
         }
     }
 
-    LaunchedEffect(Unit) {
+    LaunchedEffect(reloadToken) {
+        loading = true
         val loaded = loadChannels()
         channels = loaded
         loading = false
         loadMessage = if (loaded.isEmpty()) "No se pudo cargar el catálogo. Comprueba tu conexión e inténtalo de nuevo." else ""
+    }
+
+    LaunchedEffect(favorites) {
+        preferences.edit().putStringSet("favorites", favorites.toMutableSet()).apply()
     }
 
     BackHandler(enabled = selected != null || favoritesOnly || category != "Todos" || query.isNotEmpty()) {
@@ -294,7 +303,7 @@ private fun FaraonApp() {
                         if (query.isNotEmpty()) Text("✕", Modifier.clickable { query = "" }.padding(4.dp), color = Muted)
                     }
                     Spacer(Modifier.height(12.dp))
-                    androidx.compose.foundation.lazy.LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                         items(Categories) { item ->
                             FilterChip(
                                 selected = category == item,
@@ -325,7 +334,7 @@ private fun FaraonApp() {
                             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                                 Text(loadMessage.ifBlank { "No hay canales con ese filtro." }, color = Muted)
                                 Spacer(Modifier.height(10.dp))
-                                TextButton(onClick = { loading = true; loadMessage = "Actualizando catálogo…"; query = ""; category = "Todos"; favoritesOnly = false }) {
+                                TextButton(onClick = { query = ""; category = "Todos"; favoritesOnly = false; reloadToken++ }) {
                                     Text("Volver a cargar", color = Purple)
                                 }
                             }
