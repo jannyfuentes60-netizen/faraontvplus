@@ -39,7 +39,9 @@ import androidx.media3.common.MediaItem
 import androidx.media3.common.MimeTypes
 import androidx.media3.common.PlaybackException
 import androidx.media3.common.Player
+import androidx.media3.datasource.DefaultHttpDataSource
 import androidx.media3.exoplayer.ExoPlayer
+import androidx.media3.exoplayer.source.DefaultMediaSourceFactory
 import androidx.media3.ui.AspectRatioFrameLayout
 import androidx.media3.ui.PlayerView
 import kotlinx.coroutines.Dispatchers
@@ -152,7 +154,18 @@ private suspend fun loadChannels(): List<TvChannel> = withContext(Dispatchers.IO
 private fun FaraonApp() {
     val context = LocalContext.current
     val activity = context as? MainActivity
-    val player = remember { ExoPlayer.Builder(context).build() }
+    val player = remember {
+        val httpFactory = DefaultHttpDataSource.Factory()
+            .setUserAgent("Mozilla/5.0 (Linux; Android 14) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Mobile Safari/537.36")
+            .setAllowCrossProtocolRedirects(true)
+            .setConnectTimeoutMs(15000)
+            .setReadTimeoutMs(20000)
+        val mediaSourceFactory = DefaultMediaSourceFactory(context)
+            .setDataSourceFactory(httpFactory)
+        ExoPlayer.Builder(context)
+            .setMediaSourceFactory(mediaSourceFactory)
+            .build()
+    }
     var channels by remember { mutableStateOf<List<TvChannel>>(emptyList()) }
     var loading by remember { mutableStateOf(true) }
     var loadMessage by remember { mutableStateOf("Conectando con el catálogo público…") }
@@ -171,7 +184,15 @@ private fun FaraonApp() {
     DisposableEffect(player) {
         val listener = object : Player.Listener {
             override fun onPlayerError(error: PlaybackException) {
-                playerError = "Esta señal no se pudo reproducir. Puede estar fuera de línea o restringida."
+                val detail = error.cause?.message?.takeIf { it.isNotBlank() }
+                playerError = buildString {
+                    append("Error de reproducción: ")
+                    append(error.errorCodeName)
+                    if (detail != null) {
+                        append("\n")
+                        append(detail.take(180))
+                    }
+                }
             }
             override fun onPlaybackStateChanged(state: Int) {
                 if (state == Player.STATE_READY) {
