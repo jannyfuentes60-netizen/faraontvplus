@@ -26,6 +26,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
@@ -33,6 +34,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
+import coil.compose.AsyncImage
 import androidx.media3.common.MediaItem
 import androidx.media3.common.PlaybackException
 import androidx.media3.common.Player
@@ -157,6 +159,7 @@ private fun FaraonApp() {
     var category by remember { mutableStateOf("Todos") }
     var query by remember { mutableStateOf("") }
     var favoritesOnly by remember { mutableStateOf(false) }
+    var sortByCountry by remember { mutableStateOf(false) }
     val preferences = remember { context.getSharedPreferences("faraon_tv_plus", 0) }
     var favorites by remember { mutableStateOf(preferences.getStringSet("favorites", emptySet<String>())?.toSet() ?: emptySet()) }
     var reloadToken by remember { mutableIntStateOf(0) }
@@ -211,12 +214,12 @@ private fun FaraonApp() {
         }
     }
 
-    val filtered = remember(channels, category, query, favoritesOnly, favorites) {
+    val filtered = remember(channels, category, query, favoritesOnly, favorites, sortByCountry) {
         channels.filter { c ->
             (category == "Todos" || c.category == category) &&
                 (!favoritesOnly || favorites.contains(c.key)) &&
                 (query.isBlank() || "${c.name} ${c.group} ${c.country}".contains(query, true))
-        }.sortedBy { it.name.lowercase() }
+        }.sortedWith(if (sortByCountry) compareBy<TvChannel> { it.country.lowercase() }.thenBy { it.name.lowercase() } else compareBy<TvChannel> { it.name.lowercase() })
     }
 
     MaterialTheme(colorScheme = darkColorScheme(
@@ -320,6 +323,7 @@ private fun FaraonApp() {
                     Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween) {
                         Text(if (favoritesOnly) "Mis favoritos" else "Canales disponibles", fontSize = 19.sp, fontWeight = FontWeight.Bold)
                         Text(if (loading) "Cargando…" else "${filtered.size} canales", color = Muted, fontSize = 12.sp)
+                            TextButton(onClick = { sortByCountry = !sortByCountry }) { Text(if (sortByCountry) "País" else "A–Z", color = Purple, fontSize = 12.sp) }
                     }
                     if (loading) {
                         Box(Modifier.fillMaxWidth().weight(1f), contentAlignment = Alignment.Center) {
@@ -381,7 +385,7 @@ private fun ChannelCard(channel: TvChannel, favorite: Boolean, onToggleFavorite:
     ) {
         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween, modifier = Modifier.fillMaxWidth()) {
             Box(Modifier.size(44.dp).clip(RoundedCornerShape(12.dp)).background(Color(0xFF2B2345)), contentAlignment = Alignment.Center) {
-                Text(channel.name.trim().split(Regex("\\s+")).take(2).mapNotNull { it.firstOrNull()?.toString() }.joinToString("").uppercase(), color = Purple, fontWeight = FontWeight.Black)
+                if (channel.logo.isNotBlank()) { AsyncImage(model = channel.logo, contentDescription = channel.name, modifier = Modifier.fillMaxSize().padding(5.dp), contentScale = ContentScale.Fit) } else { Text(channel.name.trim().split(Regex("\\s+")).take(2).mapNotNull { it.firstOrNull()?.toString() }.joinToString("").uppercase(), color = Purple, fontWeight = FontWeight.Black) }
             }
             Text(if (favorite) "♥" else "♡", Modifier.clickable { onToggleFavorite() }.padding(8.dp), color = if (favorite) Color(0xFFFF6C91) else Muted, fontSize = 22.sp)
         }
