@@ -9,3 +9,7 @@
 
 /* Acción para abrir una señal deportiva desde un partido en juego */
 .match-watch-btn{display:block;width:100%;margin-top:14px;padding:11px 14px;border:1px solid rgba(157,116,255,.45);border-radius:12px;background:linear-gradient(135deg,#7b42e8,#5726b8);color:#fff;font:inherit;font-weight:700;cursor:pointer;transition:filter .2s,transform .2s}.match-watch-btn:hover{filter:brightness(1.12);transform:translateY(-1px)}.match-watch-btn:focus-visible{outline:2px solid #fff;outline-offset:3px}
+
+/* Exploración de canales por país */
+.country-toggle{margin-top:6px}.country-chevron{margin-left:auto!important;font-size:17px!important;color:#8e82a8}.country-panel{padding:0 4px 8px 12px;display:flex;flex-direction:column;gap:8px;min-height:0}.country-panel.hidden{display:none}.country-panel input{width:100%;min-width:0;background:#ffffff0b;color:#fff;border:1px solid var(--line);border-radius:9px;padding:10px;font-size:12px;outline:none}.country-panel input:focus{border-color:var(--purple)}.country-list{display:flex;flex-direction:column;gap:3px;max-height:34vh;overflow:auto;padding-right:3px}.country-option{display:flex;justify-content:space-between;align-items:center;gap:8px;text-align:left;background:transparent;color:#bcb5cf;padding:9px 10px;border-radius:8px;font-size:12px}.country-option small{color:#827a98;font-size:10px}.country-option:hover,.country-option.selected{background:#8d60ed20;color:#fff}.country-option.selected{box-shadow:inset 2px 0 var(--purple)}
+@media(max-width:760px){.country-list{max-height:27vh}.country-panel{padding-left:8px}}
