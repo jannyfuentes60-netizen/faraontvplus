@@ -89,7 +89,7 @@ class MainActivity : ComponentActivity() {
         setContent { FaraonApp() }
     }
 
-    fun setImmersive(enabled: Boolean) {
+    fun setImmersiveMode(enabled: Boolean) {
         window.decorView.systemUiVisibility = if (enabled) {
             (View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
                 or View.SYSTEM_UI_FLAG_FULLSCREEN
@@ -103,7 +103,7 @@ class MainActivity : ComponentActivity() {
     }
 
     override fun onDestroy() {
-        setImmersive(false)
+        setImmersiveMode(false)
         super.onDestroy()
     }
 }
@@ -202,11 +202,11 @@ private fun FaraonApp() {
     BackHandler(enabled = selected != null || favoritesOnly || category != "Todos" || query.isNotEmpty()) {
         if (fullScreen) {
             fullScreen = false
-            activity?.setImmersive(false)
+            activity?.setImmersiveMode(false)
         } else if (selected != null) {
             selected = null
             player.stop()
-            activity?.setImmersive(false)
+            activity?.setImmersiveMode(false)
         } else {
             favoritesOnly = false
             category = "Todos"
@@ -255,13 +255,13 @@ private fun FaraonApp() {
                         }
                         TextButton(onClick = {
                             fullScreen = !fullScreen
-                            activity?.setImmersive(fullScreen)
+                            activity?.setImmersiveMode(fullScreen)
                         }) { Text(if (fullScreen) "Salir pantalla completa" else "⛶ Pantalla completa", color = Purple) }
                         TextButton(onClick = {
                             selected = null
                             player.stop()
                             fullScreen = false
-                            activity?.setImmersive(false)
+                            activity?.setImmersiveMode(false)
                         }) { Text("Cerrar", color = Muted) }
                     }
                     Box(Modifier.fillMaxWidth().weight(1f).clip(RoundedCornerShape(14.dp)).background(Color.Black), contentAlignment = Alignment.Center) {
