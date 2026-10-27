@@ -292,3 +292,15 @@ select,.search-box input{background:rgba(223,230,255,.10);border-color:rgba(255,
  .top-actions{gap:9px}
  .discord-link{padding:9px 10px;font-size:12px}
 }
+
+/* El menú de tres puntos es independiente de la hamburguesa y también está disponible en móvil. */
+@media(max-width:760px){
+ .topbar{gap:8px;}
+ .topnav{display:flex!important;position:absolute!important;width:1px!important;height:1px!important;min-width:0!important;overflow:hidden!important;clip-path:inset(50%)!important;flex:0 0 1px!important;}
+ .nav-overflow{display:flex!important;flex:0 0 auto!important;margin-left:auto!important;}
+ .nav-more-btn{width:36px;height:36px;font-size:15px;letter-spacing:1px;}
+ .nav-more-menu{position:fixed;top:72px;right:12px;left:auto;width:min(250px,calc(100vw - 24px));max-height:calc(100dvh - 90px);overflow-y:auto;}
+ .top-actions{margin-left:0!important;gap:7px!important;}
+ .discord-link{display:none!important;}
+}
+@media(max-width:380px){.topbar{gap:5px;padding-left:8px;padding-right:8px}.topbar>.brand{font-size:16px}.topbar>.brand .brand-icon{flex-basis:27px;width:27px;height:27px;min-width:27px}.nav-more-btn{width:33px;height:33px}.top-actions{gap:5px!important}.icon-btn{width:34px;height:34px}}
