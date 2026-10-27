@@ -194,3 +194,12 @@ select,.search-box input{background:rgba(223,230,255,.10);border-color:rgba(255,
   .sidebar .side-note{margin-top:18px;flex-shrink:0}
   .sidebar .mobile-menu-links,.sidebar .side-label,.sidebar .side-link,.sidebar .country-menu{flex-shrink:0}
 }
+
+
+/* Menú Explorar: desplazamiento independiente para que todas las opciones quepan en móvil */
+.sidebar{overflow-y:auto;overflow-x:hidden;overscroll-behavior:contain;scrollbar-width:thin;scrollbar-color:rgba(190,199,255,.55) rgba(255,255,255,.06);-webkit-overflow-scrolling:touch;min-height:0}
+.sidebar::-webkit-scrollbar{width:6px}
+.sidebar::-webkit-scrollbar-track{background:rgba(255,255,255,.045);border-radius:8px}
+.sidebar::-webkit-scrollbar-thumb{background:rgba(190,199,255,.48);border-radius:8px;border:1px solid rgba(255,255,255,.08)}
+.sidebar::-webkit-scrollbar-thumb:hover{background:rgba(210,218,255,.75)}
+@media(max-width:760px){.sidebar{height:calc(100dvh - 64px);height:calc(100vh - 64px);padding:20px 14px 24px;gap:7px;overscroll-behavior-y:contain}.mobile-menu-links,.sidebar>.side-label,.sidebar>.side-link{flex-shrink:0}.mobile-menu-links{padding-bottom:8px}.side-note{margin-top:12px;flex-shrink:0}}
