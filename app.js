@@ -20,3 +20,47 @@ function startStream(c,alternatives){const thisAttempt=++playAttempt;setPlayerMe
 async function fetchText(url){const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),10000);try{const response=await fetch(url,{signal:controller.signal,cache:"no-store",mode:"cors"});if(!response.ok)throw Error("HTTP "+response.status);const body=await response.text();if(!body.replace(/^\uFEFF/,"").trimStart().startsWith("#EXTM3U")&&!body.includes("#EXTINF:"))throw Error("La fuente no devolvió una lista M3U");return body;}finally{clearTimeout(timer);}}
 async function loadPlaylist(){statusEl.textContent="Cargando señales verificadas…";countEl.textContent="Comprobando catálogo…";try{const list=parseM3U(await fetchText(PLAYLIST_URL));if(!list.length)throw Error("La lista verificada llegó vacía");channels=list;statusEl.textContent="";render();}catch(error){console.error("Faraón TV: no se pudo cargar el catálogo verificado",error);channels=[];grid.innerHTML="";countEl.textContent="No disponible";statusEl.textContent="No se pudo conectar con el catálogo de señales verificadas. Recarga la página en unos segundos.";}}
 document.querySelector("#loadMore").addEventListener("click",()=>{visible+=32;render();});document.querySelector("#sortSelect").addEventListener("change",render);searchInput.addEventListener("input",()=>{visible=32;render();});document.querySelector("#searchToggle").addEventListener("click",()=>{document.querySelector("#searchBox").classList.toggle("hidden");searchInput.focus();});document.querySelector("#menuBtn").addEventListener("click",()=>document.querySelector("#sidebar").classList.toggle("open"));document.querySelector("#mobileSearchToggle")?.addEventListener("click",()=>{document.querySelector("#searchBox").classList.remove("hidden");document.querySelector("#sidebar").classList.remove("open");searchInput.focus();document.querySelector("#channelsSection").scrollIntoView({behavior:"smooth"});});document.querySelector("#exploreBtn").addEventListener("click",()=>document.querySelector("#channelsSection").scrollIntoView({behavior:"smooth"}));document.querySelector("#featuredBtn").addEventListener("click",()=>channels.length&&playChannel(channels[0]));document.querySelector("#closePlayer").addEventListener("click",()=>{playAttempt++;if(hls){hls.destroy();hls=null;}video.pause();playerSection.classList.add("hidden");});document.querySelectorAll("[data-category]").forEach(b=>b.addEventListener("click",()=>{currentCategory=b.dataset.category;currentCountry="";currentView="live";visible=32;document.querySelectorAll("[data-category]").forEach(x=>x.classList.toggle("selected",x===b));document.querySelector("#sectionTitle").textContent=b.querySelector("span").textContent;document.querySelector("#sidebar").classList.remove("open");render();}));document.querySelectorAll("[data-view]").forEach(b=>b.addEventListener("click",()=>{currentView=b.dataset.view;document.querySelector("#sidebar").classList.remove("open");currentCategory="all";currentCountry="";visible=32;document.querySelectorAll("[data-view]").forEach(x=>x.classList.toggle("active",x===b));document.querySelector("#sectionTitle").textContent=currentView==="favorites"?"Mis favoritos":currentView==="live"?"TV en vivo":"Canales disponibles";render();}));window.addEventListener("faraon-authenticated",()=>loadPlaylist(),{once:true});
+
+/* Mueve al menú ••• únicamente las opciones de navegación que ya no caben */
+(()=>{
+ const nav=document.querySelector('.topnav'),wrap=document.querySelector('#navOverflow'),btn=document.querySelector('#navMoreBtn'),menu=document.querySelector('#navMoreMenu');
+ if(!nav||!wrap||!btn||!menu)return;
+ const items=[...nav.querySelectorAll('.nav-link')];
+ const originals=items.map(el=>({el,parent:el.parentNode,next:el.nextSibling}));
+ let scheduled=false;
+ function layout(){
+   scheduled=false;
+   if(innerWidth<=760){items.forEach(el=>{el.hidden=false;});menu.replaceChildren();btn.hidden=true;menu.hidden=true;return;}
+   items.forEach(el=>{el.hidden=false;});
+   menu.replaceChildren();
+   const style=getComputedStyle(nav),gap=parseFloat(style.columnGap)||0;
+   const available=nav.clientWidth;
+   let used=0,overflow=[];
+   items.forEach((el,i)=>{
+     const w=el.getBoundingClientRect().width;
+     const needed=w+(used?gap:0);
+     if(used+needed>available+1)overflow.push(el);
+     else used+=needed;
+   });
+   overflow.forEach(el=>{
+     el.hidden=true;
+     const clone=el.cloneNode(true);
+     clone.hidden=false;
+     clone.classList.remove('active');
+     clone.addEventListener('click',()=>{
+       menu.hidden=true;btn.setAttribute('aria-expanded','false');
+       if(clone.matches('a'))return;
+       const target=el.dataset.view;
+       if(target){el.click();}
+     });
+     menu.appendChild(clone);
+   });
+   btn.hidden=overflow.length===0;
+   if(!overflow.length){menu.hidden=true;btn.setAttribute('aria-expanded','false');}
+ }
+ btn.addEventListener('click',()=>{menu.hidden=!menu.hidden;btn.setAttribute('aria-expanded',String(!menu.hidden));});
+ document.addEventListener('click',e=>{if(!wrap.contains(e.target)){menu.hidden=true;btn.setAttribute('aria-expanded','false');}});
+ window.addEventListener('resize',()=>{if(!scheduled){scheduled=true;requestAnimationFrame(layout);}});
+ if(document.fonts?.ready)document.fonts.ready.then(layout);
+ layout();
+})();
