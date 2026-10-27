@@ -386,3 +386,7 @@ footer .brand{font-size:16px;color:#f5f7ff}footer .brand-icon{width:25px;height:
 @media(max-width:370px){.live-volume{width:58px}.live-quality{display:none}.live-glass-controls{gap:5px}.live-player-brand{gap:5px}.live-player-badge{gap:5px}}
 @media(hover:none),(pointer:coarse){.live-glass-controls{background:rgba(15,19,33,.78);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px)}}
 @media(prefers-reduced-motion:reduce){.live-player-badge i{animation:none}.live-glass-controls,.live-player-vignette,.glass-control{transition:none}}
+
+/* Mostrar/ocultar la interfaz del reproductor tocando el área del video */
+.live-player-shell.controls-hidden .live-glass-controls,.live-player-shell.controls-hidden .live-player-overlay,.live-player-shell.controls-hidden .live-player-vignette{opacity:0;visibility:hidden;pointer-events:none;transform:translateY(6px)}
+.live-player-shell .live-player-overlay,.live-player-shell .live-player-vignette{transition:opacity .22s,visibility .22s,transform .22s}
