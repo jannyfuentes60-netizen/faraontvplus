@@ -304,3 +304,6 @@ select,.search-box input{background:rgba(223,230,255,.10);border-color:rgba(255,
  .discord-link{display:none!important;}
 }
 @media(max-width:380px){.topbar{gap:5px;padding-left:8px;padding-right:8px}.topbar>.brand{font-size:16px}.topbar>.brand .brand-icon{flex-basis:27px;width:27px;height:27px;min-width:27px}.nav-more-btn{width:33px;height:33px}.top-actions{gap:5px!important}.icon-btn{width:34px;height:34px}}
+
+/* Enlaces del pie: fuente IPTV y Discord, fuera de la barra superior */
+.footer-links{display:flex;align-items:center;gap:14px;margin-left:auto;flex-wrap:wrap}.footer-links>a{margin-left:0}.footer-discord{font-size:11px;padding:8px 12px}@media(max-width:760px){.footer-links{width:100%;margin-left:0;gap:12px}.footer-discord{font-size:11px!important;width:auto!important;height:auto!important;padding:8px 12px!important}.footer-discord:before{content:none!important}}
