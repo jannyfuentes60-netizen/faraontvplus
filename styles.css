@@ -243,3 +243,27 @@ select,.search-box input{background:rgba(223,230,255,.10);border-color:rgba(255,
   .topbar>.brand .brand-icon{flex-basis:30px;width:30px;height:30px;min-width:30px;}
   .top-actions{gap:5px;}
 }
+
+
+/* Faraón TV Plus · Liquid Glass adaptativo */
+:root{--glass-edge:rgba(235,239,255,.19);--glass-shine:rgba(255,255,255,.13)}
+@media (min-width:761px) and (hover:hover) and (pointer:fine) and (prefers-reduced-motion:no-preference){
+ .topbar,.sidebar,.channel-card,.hero-badge,.icon-btn,.menu-btn,.search-box input,.load-more,.favorite,select{
+  -webkit-backdrop-filter:blur(24px) saturate(145%);backdrop-filter:blur(24px) saturate(145%);
+ }
+ .topbar:after{content:"";position:absolute;inset:0;pointer-events:none;border-radius:inherit;background:linear-gradient(115deg,rgba(255,255,255,.075),transparent 28%,transparent 72%,rgba(176,197,255,.035));opacity:.8}
+ .channel-card{isolation:isolate;overflow:hidden}
+ .channel-card:after{content:"";position:absolute;inset:0;pointer-events:none;border-radius:inherit;background:radial-gradient(ellipse at 15% 0%,rgba(255,255,255,.09),transparent 42%);opacity:.65;transition:opacity .25s}
+ .channel-card:hover:after{opacity:1}
+}
+@media (hover:none),(pointer:coarse),(max-width:760px){
+ .topbar,.sidebar,.channel-card,.hero-badge,.icon-btn,.menu-btn,.search-box input,.load-more,.favorite,select{
+  -webkit-backdrop-filter:none!important;backdrop-filter:none!important;
+ }
+ .channel-card:before,.channel-card:after,.topbar:after{display:none!important}
+ .channel-card,.topbar,.sidebar{box-shadow:0 5px 16px rgba(0,0,0,.16)}
+}
+@media(prefers-reduced-motion:reduce){
+ *,*:before,*:after{scroll-behavior:auto!important;animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}
+}
+@media(min-width:761px) and (max-height:520px){.sidebar{max-height:calc(100vh - 64px);overflow-y:auto}.hero{min-height:300px}}
