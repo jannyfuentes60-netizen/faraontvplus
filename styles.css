@@ -166,3 +166,15 @@ select,.search-box input{background:rgba(223,230,255,.10);border-color:rgba(255,
 }
 
 /* La fuente del sistema evita descargar Google Fonts en conexiones lentas */
+
+/* Navegación completa dentro del menú hamburguesa en móviles */
+.mobile-menu-links{display:none}
+.mobile-menu-divider{height:1px;background:var(--line);margin:8px 8px 12px}
+.mobile-menu-links .side-link{width:100%;font-size:15px;text-decoration:none}
+@media(max-width:760px){
+  .mobile-menu-links{display:flex;flex-direction:column;gap:7px;padding-bottom:2px}
+  .mobile-menu-links .side-label{padding:3px 12px 8px}
+  .mobile-menu-links .side-link{min-height:43px}
+  .mobile-menu-links .side-link span{font-size:13px}
+  .mobile-menu-links a.side-link{box-sizing:border-box}
+}
