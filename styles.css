@@ -183,3 +183,14 @@ select,.search-box input{background:rgba(223,230,255,.10);border-color:rgba(255,
 .brand .brand-mark.brand-icon{width:48px;height:48px;min-width:48px;flex:0 0 48px;object-fit:contain;background:transparent!important;border:0!important;border-radius:0!important;box-shadow:none!important;padding:0;filter:drop-shadow(0 2px 5px #0005)}
 .small-brand .brand-mark.brand-icon{width:30px;height:30px;min-width:30px;flex-basis:30px}
 @media(max-width:760px){.brand .brand-mark.brand-icon{width:42px;height:42px;min-width:42px;flex-basis:42px}}
+
+
+/* Menú Explorar desplazable de forma independiente en móviles */
+@media(max-width:760px){
+  .sidebar{height:calc(100dvh - 64px);height:calc(100vh - 64px);overflow-y:auto;overflow-x:hidden;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;scrollbar-width:thin;scrollbar-color:rgba(190,199,255,.55) rgba(255,255,255,.05);padding-bottom:24px}
+  .sidebar::-webkit-scrollbar{width:5px}
+  .sidebar::-webkit-scrollbar-track{background:rgba(255,255,255,.04);border-radius:10px}
+  .sidebar::-webkit-scrollbar-thumb{background:rgba(190,199,255,.48);border-radius:10px}
+  .sidebar .side-note{margin-top:18px;flex-shrink:0}
+  .sidebar .mobile-menu-links,.sidebar .side-label,.sidebar .side-link,.sidebar .country-menu{flex-shrink:0}
+}
