@@ -178,3 +178,8 @@ select,.search-box input{background:rgba(223,230,255,.10);border-color:rgba(255,
   .mobile-menu-links .side-link span{font-size:13px}
   .mobile-menu-links a.side-link{box-sizing:border-box}
 }
+
+/* Icono de marca más visible, conservando el fondo transparente */
+.brand .brand-mark.brand-icon{width:48px;height:48px;min-width:48px;flex:0 0 48px;object-fit:contain;background:transparent!important;border:0!important;border-radius:0!important;box-shadow:none!important;padding:0;filter:drop-shadow(0 2px 5px #0005)}
+.small-brand .brand-mark.brand-icon{width:30px;height:30px;min-width:30px;flex-basis:30px}
+@media(max-width:760px){.brand .brand-mark.brand-icon{width:42px;height:42px;min-width:42px;flex-basis:42px}}
