@@ -544,3 +544,12 @@ body.liquidglass-fallback .hero-glass-root>.hero{
 @media(prefers-reduced-motion:reduce){
   .hero-glass-root *{scroll-behavior:auto!important}
 }
+
+
+/* Barra superior: segunda superficie aislada para evitar capturar el video o el catálogo. */
+.nav-glass-root{position:sticky;top:0;z-index:10;isolation:isolate;width:100%;background:transparent}
+.nav-glass-backdrop{position:absolute;inset:0;pointer-events:none;background:radial-gradient(ellipse at 18% 0%,rgba(164,144,255,.18),transparent 42%),linear-gradient(115deg,#111727 0%,#17162b 52%,#202039 100%)}
+.nav-glass-root>.topbar{position:relative;top:auto;z-index:1;border-radius:0 0 22px 22px;background:rgba(255,255,255,.035)!important;border:1px solid rgba(226,231,255,.17);border-top:0;box-shadow:inset 0 1px rgba(255,255,255,.16),0 12px 32px rgba(0,0,0,.2);-webkit-backdrop-filter:none!important;backdrop-filter:none!important}
+.nav-glass-root>.topbar canvas{pointer-events:none}
+@media(max-width:760px){.nav-glass-root>.topbar{border-radius:0 0 18px 18px}}
+.hero-glass-root>.hero{overflow:visible}
