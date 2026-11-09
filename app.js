@@ -115,6 +115,19 @@ document.querySelector("#loadMore").addEventListener("click",()=>{visible+=32;re
       shadowSpread:13,
       shadowOffsetY:5
     });
+    const navRoot=document.querySelector("#navGlassRoot");
+    const navGlass=navRoot?.querySelector('[data-liquid-glass="nav"]');
+    if(navRoot&&navGlass){
+      navGlass.dataset.config=JSON.stringify({
+        cornerRadius:22,zRadius:18,refraction:.68,chromAberration:.025,
+        edgeHighlight:.3,specular:.46,fresnel:1,blurAmount:.025,
+        opacity:.97,saturation:.1,tintStrength:.07,shadowOpacity:.17
+      });
+      window.__faraonNavGlass=await LiquidGlass.init({
+        root:navRoot,glassElements:[navGlass],
+        defaults:{refraction:.66,chromAberration:.025,edgeHighlight:.28,specular:.42,fresnel:1,opacity:.97}
+      });
+    }
     const heroInstance=await LiquidGlass.init({
       root:heroRoot,
       glassElements:[heroGlass],
@@ -170,5 +183,5 @@ document.querySelector("#loadMore").addEventListener("click",()=>{visible+=32;re
   });
   playerObserver.observe(player,{attributes:true,attributeFilter:["class"]});
   if(!player.classList.contains("hidden"))startPlayerGlass();
-  window.addEventListener("pagehide",()=>{stopPlayerGlass();heroInstance?.destroy();},{once:true});
+  window.addEventListener("pagehide",()=>{stopPlayerGlass();heroInstance?.destroy();window.__faraonNavGlass?.destroy();},{once:true});
 })();
