@@ -6,7 +6,7 @@ const PLAYLIST_URLS=[
 const grid=document.querySelector("#channelGrid"),statusEl=document.querySelector("#status"),countEl=document.querySelector("#channelCount"),searchInput=document.querySelector("#searchInput"),video=document.querySelector("#video"),playerMessage=document.querySelector("#playerMessage"),playerSection=document.querySelector("#playerSection");
 let channels=[],filtered=[],visible=32,currentCategory="all",currentView="home",currentCountry="",hls=null,playAttempt=0;
 let favorites=new Set(JSON.parse(localStorage.getItem("faraon-tv-favs")||"[]"));
-function parseM3U(text){const lines=text.split(/\r?\n/),result=[];let meta=null;for(const raw of lines){const line=raw.trim();if(line.startsWith("#EXTINF:")){const name=line.split(",").slice(1).join(",").trim()||"Canal sin nombre";const get=k=>(line.match(new RegExp(k+'="([^"]*)"',"i"))||[])[1]||"";meta={name,logo:get("tvg-logo"),group:get("group-title"),country:get("tvg-country"),id:get("tvg-id")};}else if(line&&!line.startsWith("#")&&meta){if(/^https?:\/\//i.test(line))result.push({...meta,url:line,key:meta.id||line});meta=null;}}const seen=new Set();return result.filter(c=>{if(/\\b(adult|xxx|porn|erotic|18\\+)\\b/i.test((c.name||"")+" "+(c.group||"")))return false;if(seen.has(c.url))return false;seen.add(c.url);return true;});}
+function parseM3U(text){const lines=text.split(/\r?\n/),result=[];let meta=null;for(const raw of lines){const line=raw.trim();if(line.startsWith("#EXTINF:")){const name=line.split(",").slice(1).join(",").trim()||"Canal sin nombre";const get=k=>(line.match(new RegExp(k+'="([^"]*)"',"i"))||[])[1]||"";meta={name,logo:get("tvg-logo"),group:get("group-title"),country:get("tvg-country"),id:get("tvg-id")};}else if(line&&!line.startsWith("#")&&meta){if(/^https?:\/\//i.test(line))result.push({...meta,url:line,key:meta.id||line});meta=null;}}const seen=new Set();return result.filter(c=>{if(/\b(adult|xxx|porn|erotic|18\+)\b/i.test((c.name||"")+" "+(c.group||"")))return false;if(seen.has(c.url))return false;seen.add(c.url);return true;});}
 function categoryOf(c){const s=(c.group+" "+c.name).toLowerCase();if(/news|noticia|24 horas|cnn/.test(s))return"news";if(/sport|deport|futbol|fútbol|football|espn|fox sports/.test(s))return"sports";if(/kids|niñ|infantil|cartoon|disney|nickelodeon/.test(s))return"kids";if(/movie|pel[ií]cula|cinema|cine|film/.test(s))return"movies";if(/entertainment|entretenimiento|music|música|variety/.test(s))return"entertainment";return"all";}
 function initials(n){return n.replace(/\b(hd|fhd|4k|tv)\b/ig,"").trim().split(/\s+/).slice(0,2).map(w=>w[0]||"").join("").toUpperCase();}
 function esc(s){return String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));}
@@ -38,7 +38,7 @@ async function fetchText(url){
  try{
   const response=await fetch(url,{signal:controller.signal,cache:"no-store",mode:"cors"});
   if(!response.ok)throw Error("HTTP "+response.status);
-  const body=(await response.text()).replace(/^\\uFEFF/,"");
+  const body=(await response.text()).replace(/^\uFEFF/,"");
   if(!body.trimStart().startsWith("#EXTM3U")&&!body.includes("#EXTINF:"))throw Error("La respuesta no es una lista M3U válida");
   return body;
  }finally{clearTimeout(timer);}
