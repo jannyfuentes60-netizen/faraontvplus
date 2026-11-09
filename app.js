@@ -183,5 +183,5 @@ document.querySelector("#loadMore").addEventListener("click",()=>{visible+=32;re
   });
   playerObserver.observe(player,{attributes:true,attributeFilter:["class"]});
   if(!player.classList.contains("hidden"))startPlayerGlass();
-  window.addEventListener("pagehide",()=>{stopPlayerGlass();heroInstance?.destroy();window.__faraonNavGlass?.destroy();},{once:true});
+  window.addEventListener("pagehide",()=>{stopPlayerGlass();window.__faraonHeroGlass?.destroy();window.__faraonNavGlass?.destroy();},{once:true});
 })();
