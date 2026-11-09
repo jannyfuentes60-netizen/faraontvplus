@@ -1,8 +1,12 @@
-const PLAYLIST_URL="https://dearbulut.github.io/iptv/playlists/online.m3u";
+const PLAYLIST_URLS=[
+ "https://dearbulut.github.io/iptv/playlists/best.m3u",
+ "https://dearbulut.github.io/iptv/playlists/online.m3u",
+ "https://iptv-org.github.io/iptv/countries/mx.m3u"
+];
 const grid=document.querySelector("#channelGrid"),statusEl=document.querySelector("#status"),countEl=document.querySelector("#channelCount"),searchInput=document.querySelector("#searchInput"),video=document.querySelector("#video"),playerMessage=document.querySelector("#playerMessage"),playerSection=document.querySelector("#playerSection");
 let channels=[],filtered=[],visible=32,currentCategory="all",currentView="home",currentCountry="",hls=null,playAttempt=0;
 let favorites=new Set(JSON.parse(localStorage.getItem("faraon-tv-favs")||"[]"));
-function parseM3U(text){const lines=text.split(/\r?\n/),result=[];let meta=null;for(const raw of lines){const line=raw.trim();if(line.startsWith("#EXTINF:")){const name=line.split(",").slice(1).join(",").trim()||"Canal sin nombre";const get=k=>(line.match(new RegExp(k+'="([^"]*)"',"i"))||[])[1]||"";meta={name,logo:get("tvg-logo"),group:get("group-title"),country:get("tvg-country"),id:get("tvg-id")};}else if(line&&!line.startsWith("#")&&meta){if(/^https?:\/\//i.test(line))result.push({...meta,url:line,key:meta.id||line});meta=null;}}const seen=new Set();return result.filter(c=>{if(seen.has(c.url))return false;seen.add(c.url);return true;});}
+function parseM3U(text){const lines=text.split(/\r?\n/),result=[];let meta=null;for(const raw of lines){const line=raw.trim();if(line.startsWith("#EXTINF:")){const name=line.split(",").slice(1).join(",").trim()||"Canal sin nombre";const get=k=>(line.match(new RegExp(k+'="([^"]*)"',"i"))||[])[1]||"";meta={name,logo:get("tvg-logo"),group:get("group-title"),country:get("tvg-country"),id:get("tvg-id")};}else if(line&&!line.startsWith("#")&&meta){if(/^https?:\/\//i.test(line))result.push({...meta,url:line,key:meta.id||line});meta=null;}}const seen=new Set();return result.filter(c=>{if(/\\b(adult|xxx|porn|erotic|18\\+)\\b/i.test((c.name||"")+" "+(c.group||"")))return false;if(seen.has(c.url))return false;seen.add(c.url);return true;});}
 function categoryOf(c){const s=(c.group+" "+c.name).toLowerCase();if(/news|noticia|24 horas|cnn/.test(s))return"news";if(/sport|deport|futbol|fútbol|football|espn|fox sports/.test(s))return"sports";if(/kids|niñ|infantil|cartoon|disney|nickelodeon/.test(s))return"kids";if(/movie|pel[ií]cula|cinema|cine|film/.test(s))return"movies";if(/entertainment|entretenimiento|music|música|variety/.test(s))return"entertainment";return"all";}
 function initials(n){return n.replace(/\b(hd|fhd|4k|tv)\b/ig,"").trim().split(/\s+/).slice(0,2).map(w=>w[0]||"").join("").toUpperCase();}
 function esc(s){return String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));}
@@ -29,8 +33,36 @@ videoShell?.addEventListener("click",event=>{if(event.target.closest(".live-glas
 videoShell?.addEventListener("keydown",event=>{if((event.key==="Enter"||event.key===" ")&&event.target===video){event.preventDefault();videoShell.classList.toggle("controls-hidden");}});
 function playChannel(c,alternativesOverride){playerSection.classList.remove("hidden");document.querySelector("#playingTitle").textContent=c.name;setPlayerMessage("Conectando con la señal…");if(hls){hls.destroy();hls=null;}video.pause();video.removeAttribute("src");video.load();playAttempt=0;const alternatives=Array.isArray(alternativesOverride)?alternativesOverride.slice():channels.filter(x=>x.url!==c.url&&normalizeName(x.name)===normalizeName(c.name));startStream(c,alternatives);}
 function startStream(c,alternatives){const thisAttempt=++playAttempt;setPlayerMessage(thisAttempt===1?"Conectando con la señal…":"Probando otra señal disponible…");if(hls){hls.destroy();hls=null;}video.pause();video.removeAttribute("src");video.load();let failed=false;const fail=()=>{if(failed||thisAttempt!==playAttempt)return;failed=true;if(alternatives.length){const next=alternatives.shift();startStream(next,alternatives);return;}setPlayerMessage("No se pudo reproducir este canal ahora. Puede estar fuera de línea o bloquear la reproducción en tu región.");};if(/\.m3u8(?:$|[?#])/i.test(c.url)&&window.Hls&&Hls.isSupported()){hls=new Hls({enableWorker:true,manifestLoadingTimeOut:12000,levelLoadingTimeOut:12000,fragLoadingTimeOut:20000});hls.loadSource(c.url);hls.attachMedia(video);hls.on(Hls.Events.MANIFEST_PARSED,()=>{if(thisAttempt!==playAttempt)return;video.play().then(finishPlayback).catch(()=>setPlayerMessage("Señal cargada. Pulsa reproducir para iniciar."));});hls.on(Hls.Events.ERROR,(_,d)=>{if(thisAttempt!==playAttempt||!d.fatal)return;if(d.type===Hls.ErrorTypes.NETWORK_ERROR){try{hls.startLoad();}catch{fail();}}else if(d.type===Hls.ErrorTypes.MEDIA_ERROR){try{hls.recoverMediaError();}catch{fail();}}else fail();setTimeout(()=>{if(thisAttempt===playAttempt&&video.readyState===0)fail();},5000);});}else{video.src=c.url;video.onplaying=()=>{if(thisAttempt===playAttempt)finishPlayback();};video.onerror=fail;video.play().then(()=>{if(thisAttempt===playAttempt)finishPlayback();}).catch(()=>{if(thisAttempt===playAttempt)setPlayerMessage("Pulsa reproducir. Si no inicia, se probará otra señal.");});setTimeout(()=>{if(thisAttempt===playAttempt&&video.readyState===0)fail();},10000);}playerSection.scrollIntoView({behavior:"smooth",block:"start"});}
-async function fetchText(url){const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),10000);try{const response=await fetch(url,{signal:controller.signal,cache:"no-store",mode:"cors"});if(!response.ok)throw Error("HTTP "+response.status);const body=await response.text();if(!body.replace(/^\uFEFF/,"").trimStart().startsWith("#EXTM3U")&&!body.includes("#EXTINF:"))throw Error("La fuente no devolvió una lista M3U");return body;}finally{clearTimeout(timer);}}
-async function loadPlaylist(){statusEl.textContent="Cargando señales verificadas…";countEl.textContent="Comprobando catálogo…";try{const list=parseM3U(await fetchText(PLAYLIST_URL));if(!list.length)throw Error("La lista verificada llegó vacía");channels=list;statusEl.textContent="";render();}catch(error){console.error("Faraón TV: no se pudo cargar el catálogo verificado",error);channels=[];grid.innerHTML="";countEl.textContent="No disponible";statusEl.textContent="No se pudo conectar con el catálogo de señales verificadas. Recarga la página en unos segundos.";}}
+async function fetchText(url){
+ const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),30000);
+ try{
+  const response=await fetch(url,{signal:controller.signal,cache:"no-store",mode:"cors"});
+  if(!response.ok)throw Error("HTTP "+response.status);
+  const body=(await response.text()).replace(/^\\uFEFF/,"");
+  if(!body.trimStart().startsWith("#EXTM3U")&&!body.includes("#EXTINF:"))throw Error("La respuesta no es una lista M3U válida");
+  return body;
+ }finally{clearTimeout(timer);}
+}
+async function loadPlaylist(){
+ statusEl.textContent="Conectando con el catálogo de canales…";
+ countEl.textContent="Comprobando fuentes…";
+ const errors=[];
+ for(const url of PLAYLIST_URLS){
+  try{
+   const list=parseM3U(await fetchText(url));
+   if(!list.length)throw Error("La lista no contiene canales reconocibles");
+   channels=list;statusEl.textContent="";render();
+   console.info("Faraón TV: catálogo cargado",url,list.length);
+   return;
+  }catch(error){
+   errors.push(url+" → "+(error?.message||"error desconocido"));
+   console.warn("Faraón TV: fuente no disponible, probando respaldo",url,error);
+  }
+ }
+ channels=[];grid.innerHTML="";countEl.textContent="No disponible";
+ statusEl.textContent="No se pudo conectar con el catálogo. Comprueba tu conexión e inténtalo de nuevo.";
+ console.error("Faraón TV: fallaron todas las fuentes",errors);
+}
 document.querySelector("#loadMore").addEventListener("click",()=>{visible+=32;render();});document.querySelector("#sortSelect").addEventListener("change",render);searchInput.addEventListener("input",()=>{visible=32;render();});document.querySelector("#searchToggle").addEventListener("click",()=>{document.querySelector("#searchBox").classList.toggle("hidden");searchInput.focus();});document.querySelector("#menuBtn").addEventListener("click",()=>document.querySelector("#sidebar").classList.toggle("open"));document.querySelector("#mobileSearchToggle")?.addEventListener("click",()=>{document.querySelector("#searchBox").classList.remove("hidden");document.querySelector("#sidebar").classList.remove("open");searchInput.focus();document.querySelector("#channelsSection").scrollIntoView({behavior:"smooth"});});document.querySelector("#exploreBtn").addEventListener("click",()=>document.querySelector("#channelsSection").scrollIntoView({behavior:"smooth"}));document.querySelector("#featuredBtn").addEventListener("click",()=>channels.length&&playChannel(channels[0]));document.querySelector("#closePlayer").addEventListener("click",()=>{playAttempt++;if(hls){hls.destroy();hls=null;}video.pause();playerSection.classList.add("hidden");});document.querySelectorAll("[data-category]").forEach(b=>b.addEventListener("click",()=>{currentCategory=b.dataset.category;currentCountry="";currentView="live";visible=32;document.querySelectorAll("[data-category]").forEach(x=>x.classList.toggle("selected",x===b));document.querySelector("#sectionTitle").textContent=b.querySelector("span").textContent;document.querySelector("#sidebar").classList.remove("open");render();}));document.querySelectorAll("[data-view]").forEach(b=>b.addEventListener("click",()=>{currentView=b.dataset.view;document.querySelector("#sidebar").classList.remove("open");currentCategory="all";currentCountry="";visible=32;document.querySelectorAll("[data-view]").forEach(x=>x.classList.toggle("active",x===b));document.querySelector("#sectionTitle").textContent=currentView==="favorites"?"Mis favoritos":currentView==="live"?"TV en vivo":"Canales disponibles";render();}));window.addEventListener("faraon-authenticated",()=>loadPlaylist(),{once:true});
 
 /* Mueve al menú ••• únicamente las opciones de navegación que ya no caben */
@@ -86,102 +118,3 @@ document.querySelector("#loadMore").addEventListener("click",()=>{visible+=32;re
  layout();
 })();;
 
-
-/* LiquidGlassUI integration: real shader refraction, isolated roots and low-end fallback. */
-(async()=>{
-  const heroRoot=document.querySelector("#heroGlassRoot");
-  const heroGlass=heroRoot?.querySelector('[data-liquid-glass="hero"]');
-  if(!heroRoot||!heroGlass)return;
-  const glassModuleUrl="https://cdn.jsdelivr.net/npm/@ybouane/liquidglass/dist/index.js";
-  let LiquidGlass;
-  try{
-    ({LiquidGlass}=await import(glassModuleUrl));
-    await (document.fonts?.ready||Promise.resolve());
-    heroGlass.dataset.config=JSON.stringify({
-      cornerRadius:window.matchMedia("(max-width: 760px)").matches?22:0,
-      zRadius:26,
-      refraction:.82,
-      chromAberration:.035,
-      edgeHighlight:.34,
-      specular:.52,
-      fresnel:1,
-      blurAmount:.035,
-      distortion:.012,
-      opacity:.97,
-      saturation:.12,
-      tintStrength:.075,
-      brightness:.015,
-      shadowOpacity:.2,
-      shadowSpread:13,
-      shadowOffsetY:5
-    });
-    const navRoot=document.querySelector("#navGlassRoot");
-    const navGlass=navRoot?.querySelector('[data-liquid-glass="nav"]');
-    if(navRoot&&navGlass){
-      navGlass.dataset.config=JSON.stringify({
-        cornerRadius:22,zRadius:18,refraction:.68,chromAberration:.025,
-        edgeHighlight:.3,specular:.46,fresnel:1,blurAmount:.025,
-        opacity:.97,saturation:.1,tintStrength:.07,shadowOpacity:.17
-      });
-      window.__faraonNavGlass=await LiquidGlass.init({
-        root:navRoot,glassElements:[navGlass],
-        defaults:{refraction:.66,chromAberration:.025,edgeHighlight:.28,specular:.42,fresnel:1,opacity:.97}
-      });
-    }
-    const heroInstance=await LiquidGlass.init({
-      root:heroRoot,
-      glassElements:[heroGlass],
-      defaults:{refraction:.78,chromAberration:.03,edgeHighlight:.3,specular:.48,fresnel:1,opacity:.97}
-    });
-    window.__faraonHeroGlass=heroInstance;
-    document.documentElement.classList.add("liquidglass-ready");
-  }catch(error){
-    console.warn("LiquidGlassUI: portada en modo compatible.",error);
-    document.body.classList.add("liquidglass-fallback");
-  }
-
-  // The live controls can refract the moving TV picture, but only enable this
-  // extra continuously-updated WebGL surface on larger devices.
-  const shell=document.querySelector(".live-player-shell");
-  const controls=shell?.querySelector(".live-glass-controls");
-  const player=document.querySelector("#playerSection");
-  if(!shell||!controls||!player||!LiquidGlass)return;
-  const memory=Number(navigator.deviceMemory||0);
-  const cores=Number(navigator.hardwareConcurrency||0);
-  const desktopCapable=window.matchMedia("(min-width: 761px)").matches&&(!memory||memory>=6)&&(!cores||cores>=8);
-  if(!desktopCapable)return;
-  let playerInstance=null,starting=false;
-  async function startPlayerGlass(){
-    if(playerInstance||starting||player.classList.contains("hidden"))return;
-    starting=true;
-    try{
-      controls.dataset.config=JSON.stringify({
-        cornerRadius:18,zRadius:15,refraction:.56,chromAberration:.018,
-        edgeHighlight:.28,specular:.4,fresnel:1,blurAmount:.025,
-        opacity:.98,tintStrength:.045,saturation:.08,shadowOpacity:.16
-      });
-      playerInstance=await LiquidGlass.init({
-        root:shell,
-        glassElements:[controls],
-        defaults:{refraction:.55,chromAberration:.018,edgeHighlight:.25,specular:.38,fresnel:1,opacity:.98}
-      });
-      controls.classList.add("liquidglass-active");
-      window.__faraonPlayerGlass=playerInstance;
-    }catch(error){console.warn("LiquidGlassUI: controles del reproductor en modo compatible.",error);}
-    finally{starting=false;}
-  }
-  function stopPlayerGlass(){
-    if(!playerInstance)return;
-    playerInstance.destroy();
-    playerInstance=null;
-    controls.classList.remove("liquidglass-active");
-    delete window.__faraonPlayerGlass;
-  }
-  const playerObserver=new MutationObserver(()=>{
-    if(player.classList.contains("hidden"))stopPlayerGlass();
-    else startPlayerGlass();
-  });
-  playerObserver.observe(player,{attributes:true,attributeFilter:["class"]});
-  if(!player.classList.contains("hidden"))startPlayerGlass();
-  window.addEventListener("pagehide",()=>{stopPlayerGlass();window.__faraonHeroGlass?.destroy();window.__faraonNavGlass?.destroy();},{once:true});
-})();
