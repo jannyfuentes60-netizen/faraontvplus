@@ -568,3 +568,5 @@ body.liquidglass-fallback .hero-glass-root>.hero{
 .hero-glass-root>.hero canvas,.nav-glass-root>.topbar canvas{display:none!important}
 @media(max-width:760px){.nav-glass-root{background:rgba(12,16,29,.56);-webkit-backdrop-filter:blur(18px) saturate(170%);backdrop-filter:blur(18px) saturate(170%)}.nav-glass-root>.topbar{-webkit-backdrop-filter:blur(20px) saturate(180%)!important;backdrop-filter:blur(20px) saturate(180%)!important}.hero-glass-root>.hero{-webkit-backdrop-filter:blur(18px) saturate(175%)!important;backdrop-filter:blur(18px) saturate(175%)!important}}
 @media(prefers-reduced-motion:reduce){.nav-glass-root>.topbar:before{display:none}}
+
+/* final publish: live native glass and playlist recovery */
