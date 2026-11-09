@@ -85,3 +85,90 @@ document.querySelector("#loadMore").addEventListener("click",()=>{visible+=32;re
  if(document.fonts?.ready)document.fonts.ready.then(layout);
  layout();
 })();;
+
+
+/* LiquidGlassUI integration: real shader refraction, isolated roots and low-end fallback. */
+(async()=>{
+  const heroRoot=document.querySelector("#heroGlassRoot");
+  const heroGlass=heroRoot?.querySelector('[data-liquid-glass="hero"]');
+  if(!heroRoot||!heroGlass)return;
+  const glassModuleUrl="https://cdn.jsdelivr.net/npm/@ybouane/liquidglass/dist/index.js";
+  let LiquidGlass;
+  try{
+    ({LiquidGlass}=await import(glassModuleUrl));
+    await (document.fonts?.ready||Promise.resolve());
+    heroGlass.dataset.config=JSON.stringify({
+      cornerRadius:window.matchMedia("(max-width: 760px)").matches?22:0,
+      zRadius:26,
+      refraction:.82,
+      chromAberration:.035,
+      edgeHighlight:.34,
+      specular:.52,
+      fresnel:1,
+      blurAmount:.035,
+      distortion:.012,
+      opacity:.97,
+      saturation:.12,
+      tintStrength:.075,
+      brightness:.015,
+      shadowOpacity:.2,
+      shadowSpread:13,
+      shadowOffsetY:5
+    });
+    const heroInstance=await LiquidGlass.init({
+      root:heroRoot,
+      glassElements:[heroGlass],
+      defaults:{refraction:.78,chromAberration:.03,edgeHighlight:.3,specular:.48,fresnel:1,opacity:.97}
+    });
+    window.__faraonHeroGlass=heroInstance;
+    document.documentElement.classList.add("liquidglass-ready");
+  }catch(error){
+    console.warn("LiquidGlassUI: portada en modo compatible.",error);
+    document.body.classList.add("liquidglass-fallback");
+  }
+
+  // The live controls can refract the moving TV picture, but only enable this
+  // extra continuously-updated WebGL surface on larger devices.
+  const shell=document.querySelector(".live-player-shell");
+  const controls=shell?.querySelector(".live-glass-controls");
+  const player=document.querySelector("#playerSection");
+  if(!shell||!controls||!player||!LiquidGlass)return;
+  const memory=Number(navigator.deviceMemory||0);
+  const cores=Number(navigator.hardwareConcurrency||0);
+  const desktopCapable=window.matchMedia("(min-width: 761px)").matches&&(!memory||memory>=6)&&(!cores||cores>=8);
+  if(!desktopCapable)return;
+  let playerInstance=null,starting=false;
+  async function startPlayerGlass(){
+    if(playerInstance||starting||player.classList.contains("hidden"))return;
+    starting=true;
+    try{
+      controls.dataset.config=JSON.stringify({
+        cornerRadius:18,zRadius:15,refraction:.56,chromAberration:.018,
+        edgeHighlight:.28,specular:.4,fresnel:1,blurAmount:.025,
+        opacity:.98,tintStrength:.045,saturation:.08,shadowOpacity:.16
+      });
+      playerInstance=await LiquidGlass.init({
+        root:shell,
+        glassElements:[controls],
+        defaults:{refraction:.55,chromAberration:.018,edgeHighlight:.25,specular:.38,fresnel:1,opacity:.98}
+      });
+      controls.classList.add("liquidglass-active");
+      window.__faraonPlayerGlass=playerInstance;
+    }catch(error){console.warn("LiquidGlassUI: controles del reproductor en modo compatible.",error);}
+    finally{starting=false;}
+  }
+  function stopPlayerGlass(){
+    if(!playerInstance)return;
+    playerInstance.destroy();
+    playerInstance=null;
+    controls.classList.remove("liquidglass-active");
+    delete window.__faraonPlayerGlass;
+  }
+  const playerObserver=new MutationObserver(()=>{
+    if(player.classList.contains("hidden"))stopPlayerGlass();
+    else startPlayerGlass();
+  });
+  playerObserver.observe(player,{attributes:true,attributeFilter:["class"]});
+  if(!player.classList.contains("hidden"))startPlayerGlass();
+  window.addEventListener("pagehide",()=>{stopPlayerGlass();heroInstance?.destroy();},{once:true});
+})();
