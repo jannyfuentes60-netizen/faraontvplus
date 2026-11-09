@@ -460,3 +460,87 @@ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible{ou
 @media(max-width:760px){.topbar{height:64px;padding-inline:12px;gap:10px}.brand{font-size:20px}.sidebar{top:64px;width:min(290px,86vw);background:rgba(12,15,27,.97);box-shadow:18px 0 55px rgba(0,0,0,.35)}main{margin-left:0}.hero{min-height:380px;padding:40px 23px}.hero:before{right:-110px;top:55px;width:280px;height:280px}.hero:after{right:5%;top:95px;font-size:120px}.hero-shade{background:linear-gradient(90deg,rgba(14,18,32,.96),rgba(14,18,32,.7) 65%,rgba(14,18,32,.35))}.hero h1{font-size:clamp(43px,10vw,61px)}.hero-badge{right:17px;bottom:17px;transform:scale(.78);transform-origin:bottom right}.content-section{padding:26px 14px 38px}.section-head{align-items:flex-start}.section-tools{gap:7px}.section-tools select{padding:8px 9px}.channel-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.channel-card{padding:12px 10px 11px;border-radius:15px}.channel-logo{height:75px}.channel-name{font-size:12px}.player-section{margin:15px 9px 0;padding:12px;border-radius:17px}.live-player-shell{border-radius:12px}footer{padding:23px 15px;align-items:flex-start;flex-direction:column;gap:12px}.footer-links{gap:12px}}
 @media(max-width:380px){.hero{padding:34px 17px;min-height:365px}.hero-actions{gap:8px}.primary-btn,.secondary-btn{padding:12px 13px;font-size:12px}.channel-card{padding:10px 8px}.channel-logo{height:65px}.channel-meta{font-size:9px}.section-tools{flex-direction:column;align-items:flex-end}}
 @media(prefers-reduced-motion:reduce){.channel-card,.primary-btn,.secondary-btn,.icon-btn,.side-link{transition:none!important}}
+
+
+/* LiquidGlassUI · superficie óptica WebGL real en la portada */
+.hero-glass-root{
+  position:relative;
+  isolation:isolate;
+  overflow:visible;
+  background:transparent;
+}
+.hero-backdrop{
+  position:absolute;
+  inset:0;
+  z-index:0;
+  pointer-events:none;
+  overflow:hidden;
+  background:
+    radial-gradient(ellipse at 78% 42%,rgba(124,87,190,.52),transparent 38%),
+    radial-gradient(ellipse at 92% 82%,rgba(64,132,175,.2),transparent 34%),
+    linear-gradient(115deg,#0b0e19 0%,#151127 57%,#201438 100%);
+}
+.hero-backdrop::before{
+  content:"";
+  position:absolute;
+  width:clamp(230px,32vw,410px);
+  aspect-ratio:1;
+  right:10%;
+  top:7%;
+  border-radius:50%;
+  border:1px solid rgba(226,230,255,.28);
+  background:radial-gradient(circle at 32% 24%,rgba(255,255,255,.16),transparent 34%),radial-gradient(circle,rgba(173,150,255,.12),transparent 68%);
+  box-shadow:inset 0 1px 18px rgba(255,255,255,.1),0 0 0 28px rgba(196,181,253,.035),0 0 0 62px rgba(196,181,253,.022),0 0 100px rgba(139,92,246,.18);
+}
+.hero-backdrop::after{
+  content:"";
+  position:absolute;
+  inset:0;
+  background:linear-gradient(90deg,rgba(7,10,18,.62),rgba(7,10,18,.28) 45%,rgba(7,10,18,.02));
+}
+.hero-glass-root>.hero{
+  position:relative;
+  z-index:1;
+  background:rgba(255,255,255,.035)!important;
+  border:1px solid rgba(226,231,255,.16);
+  border-top-color:rgba(255,255,255,.28);
+  box-shadow:inset 0 1px rgba(255,255,255,.13),0 18px 50px rgba(0,0,0,.13);
+  -webkit-backdrop-filter:none!important;
+  backdrop-filter:none!important;
+}
+.hero-glass-root>.hero .hero-shade{
+  background:linear-gradient(90deg,rgba(8,11,20,.24),rgba(8,11,20,.08) 46%,transparent);
+}
+.hero-glass-root>.hero .hero-content,
+.hero-glass-root>.hero .hero-badge{z-index:3}
+.hero-glass-root>.hero:before{z-index:2;pointer-events:none}
+.hero-glass-root>.hero:after{z-index:2;pointer-events:none}
+.hero-glass-root .hero-backdrop{border-radius:0}
+.hero-glass-root .hero canvas{pointer-events:none}
+body.liquidglass-fallback .hero-glass-root>.hero{
+  background:linear-gradient(135deg,rgba(255,255,255,.09),rgba(166,151,255,.045))!important;
+  -webkit-backdrop-filter:blur(12px) saturate(145%)!important;
+  backdrop-filter:blur(12px) saturate(145%)!important;
+}
+.live-glass-controls.liquidglass-active{
+  background:rgba(255,255,255,.025)!important;
+  -webkit-backdrop-filter:none!important;
+  backdrop-filter:none!important;
+}
+.live-glass-controls.liquidglass-active .glass-control{
+  background:rgba(255,255,255,.055);
+  border-color:rgba(255,255,255,.24);
+}
+@media(max-width:760px){
+  .hero-glass-root{margin:12px 10px 8px}
+  .hero-glass-root>.hero{margin:0;border-radius:22px;overflow:visible;min-height:410px}
+  .hero-glass-root .hero-backdrop{border-radius:22px}
+  .hero-backdrop::before{right:-18%;top:18%;width:245px}
+  .hero-backdrop::after{background:linear-gradient(90deg,rgba(7,10,18,.48),rgba(7,10,18,.22) 65%,rgba(7,10,18,.06))}
+}
+@media(max-width:380px){
+  .hero-glass-root>.hero{min-height:365px}
+}
+@media(prefers-reduced-motion:reduce){
+  .hero-glass-root *{scroll-behavior:auto!important}
+}
